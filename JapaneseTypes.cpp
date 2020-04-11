@@ -134,5 +134,9 @@ auto	Kanji::ImGuiUpdate() -> void
 			}
 			ImGui::Unindent();
 		}
+		if (kunTranslation.Count() > 0)
+			ImGui::Text(MString("Kunyomi Translation : " + kunTranslation).Str());
+		if (onTranslation.Count() > 0)
+			ImGui::Text(MString("Onyomi Translation : " + onTranslation).Str());
 	}
 }

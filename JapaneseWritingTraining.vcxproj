@@ -148,6 +148,10 @@
     <ClCompile Include="Libs\shell.c" />
     <ClCompile Include="Libs\sqlite3.c" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MainMenuScene.cpp" />
+    <ClCompile Include="RevisionScene.cpp" />
+    <ClCompile Include="UIButton.cpp" />
+    <ClCompile Include="UITextRender.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -200,7 +204,12 @@
     <ClInclude Include="Libs\rapidjson\stream.h" />
     <ClInclude Include="Libs\rapidjson\stringbuffer.h" />
     <ClInclude Include="Libs\rapidjson\writer.h" />
+    <ClInclude Include="MainMenuScene.h" />
+    <ClInclude Include="RevisionScene.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="UIButton.h" />
+    <ClInclude Include="UIRenderBase.h" />
+    <ClInclude Include="UITextRender.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="Word.h" />
   </ItemGroup>

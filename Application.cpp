@@ -1,5 +1,6 @@
 #include "Application.h"
 
+#include "Scene.h"
 #include "Window.h"
 #include "D3D11Renderer.h"
 #include "Database.h"
@@ -7,6 +8,8 @@
 #include <imgui.h>
 #include "imgui_impl_dx11.h"
 #include "imgui_impl_win32.h"
+
+Application* Application::Instance = nullptr;
 
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -51,10 +54,19 @@ auto	Application::Initialize() -> void
 	msg = new tagMSG();
 	ZeroMemory(msg, sizeof(msg));
 	running = true;
+	
+	Instance = this;
 }
 
 auto	Application::Shutdown() -> void
 {
+	Instance = nullptr;
+	if (scene)
+	{
+		scene->Shutdown();
+		delete scene;
+		scene = nullptr;
+	}
 	AnimateWindow(window->GetWindow(), 200, AW_HIDE | AW_BLEND);
 	database->CloseDatabase();
 
@@ -87,7 +99,13 @@ auto	Application::Update() -> void
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
+	if (scene)
+		scene->Update();
+
 	renderer->BeginRender();
+
+	if (scene)
+		scene->Render(renderer);
 
 	ImGui::Begin("Database");
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -95,8 +113,20 @@ auto	Application::Update() -> void
 
 	ImGui::End();
 
+	renderer->EndRender();
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-	renderer->EndRender();
 	renderer->Swap();
+}
+
+auto	Application::SetScene(Scene* inScene) -> void
+{
+	if (scene)
+	{
+		scene->Shutdown();
+		delete scene;
+		scene = nullptr;
+	}
+	scene = inScene;
+	inScene->Initialize();
 }

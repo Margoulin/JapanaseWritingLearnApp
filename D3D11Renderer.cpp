@@ -37,6 +37,16 @@ auto	D3D11Renderer::EndRender() -> void
 	spriteBatch->End();
 }
 
+auto	D3D11Renderer::DrawString(const char* text, Vector2F const& position, Vector4F const& color) -> void
+{
+	font->DrawString(spriteBatch, text, { position.x, position.y, 1.0f, 1.0f }, {color.x, color.y, color.z, color.w});
+}
+
+auto	D3D11Renderer::DrawString(MString const& text, Vector2F const& position, Vector4F const& color) -> void
+{
+	DrawString(text.Str(), position, color);
+}
+
 auto	D3D11Renderer::createRenderTarget() -> void
 {
 	DXGI_SWAP_CHAIN_DESC sd;

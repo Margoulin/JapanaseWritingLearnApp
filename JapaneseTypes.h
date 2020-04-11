@@ -20,11 +20,15 @@ public:
 
 	auto	SetKunyomi(uint8_t idx, MWString const& text) { kunyomi[idx] = text; }
 	auto	SetOnyomi(uint8_t idx, MWString const& text) { onyomi[idx] = text; }
+	auto	SetKunyomiTranslation(MString const& inValue) { kunTranslation = inValue; }
+	auto	SetOnyomiTranslation(MString const& inValue) { onTranslation = inValue; }
 
 	auto	GetKanji() const -> const wchar_t { return kanji[0]; }
 	auto	GetKanjiStr() const -> const wchar_t* { return kanji; }
 	auto	GetKunyomi(unsigned int idx) const -> MWString const& { return kunyomi[idx]; }
 	auto	GetOnyomi(unsigned int idx) const -> MWString const& { return onyomi[idx]; }
+	auto	GetKunyomiTranslation() const -> MString const& { return kunTranslation; }
+	auto	GetOnyomiTranslation() const -> MString const& { return onTranslation; }
 
 	auto	GetKunyomiCount() const -> uint8_t { return kunyomiCount; }
 	auto	GetOnyomiCount() const -> uint8_t { return onyomiCount; }
@@ -40,6 +44,8 @@ private:
 	wchar_t		kanji[2];
 	MWString*	kunyomi = nullptr;
 	MWString*	onyomi = nullptr;
+	MString		kunTranslation;
+	MString		onTranslation;
 	uint8_t		kunyomiCount = 0;
 	uint8_t		onyomiCount = 0;
 };

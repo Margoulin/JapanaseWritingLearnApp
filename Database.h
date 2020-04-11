@@ -25,6 +25,12 @@ public:
 	auto	GetKanji(uint8_t pos) const -> Kanji* { return kanjis[pos]; }
 	auto	GetKanjiCount() const -> uint8_t { return kanjiCount; }
 
+	auto	Review_GetLast20Kanjis() -> void;
+	auto	Review_GetFailedKanjis() -> void;
+	auto	Review_GetOldKanjis() -> void;
+	auto	Review_KanjiAddCorrect(Kanji* kanji) -> void;
+	auto	Review_KanjiAddWrong(Kanji* kanji) -> void;
+
 	auto	operator = (const Database&)->Database & = delete;
 	auto	operator = (Database&&)->Database & = delete;
 

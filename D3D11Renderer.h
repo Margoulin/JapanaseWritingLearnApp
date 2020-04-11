@@ -8,6 +8,8 @@
 
 #include "DirectXTK-master/Inc/SpriteFont.h"
 
+static const Vector4F ColorWhite(1.0f, 1.0f, 1.0f, 1.0f);
+
 using namespace Microsoft::WRL;
 
 class Window;
@@ -29,6 +31,9 @@ public:
 
 	auto	BeginRender() -> void;
 	auto	EndRender() -> void;
+
+	auto	DrawString(const char* text, Vector2F const& position, Vector4F const& color) -> void;
+	auto	DrawString(MString const& text, Vector2F const& position, Vector4F const& color) -> void;
 
 	auto	GetDevice() const -> ID3D11Device* { return device; }
 	auto	GetDeviceContext() const -> ID3D11DeviceContext* { return deviceContext; }
