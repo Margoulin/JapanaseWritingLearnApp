@@ -20,9 +20,14 @@ public:
 
 	auto	Update() -> void;
 
+	auto	LoadScene(Scene* newScene) -> void;
+
 	auto	SetScene(Scene* scene) -> void;
 
+	auto	GetDatabase() const -> Database* { return database; }
+
 	auto	IsRunning() const -> bool { return running; }
+	auto	IsPendingSceneExists() const -> bool { return pendingScene != nullptr; }
 
 	static Application* Instance;
 
@@ -33,6 +38,7 @@ protected:
 
 private:
 	Scene*			scene = nullptr;
+	Scene*			pendingScene = nullptr;
 	Database*		database = nullptr;
 	Window*			window = nullptr;
 	D3D11Renderer*	renderer = nullptr;

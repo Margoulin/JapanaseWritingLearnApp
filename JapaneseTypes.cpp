@@ -63,6 +63,7 @@ auto	Kanji::SerializeKunyomi() const ->MString
 {
 	StringBuffer sb;
 	PrettyWriter<StringBuffer> writer(sb);
+	writer.SetFormatOptions(PrettyFormatOptions::kFormatSingleLineArray);
 	writer.StartObject();
 
 	writer.String("Kunyomi");
@@ -85,6 +86,7 @@ auto	Kanji::SerializeOnyomi() const -> MString
 {
 	StringBuffer sb;
 	PrettyWriter<StringBuffer> writer(sb);
+	writer.SetFormatOptions(PrettyFormatOptions::kFormatSingleLineArray);
 	writer.StartObject();
 
 	writer.String("Onyomi");

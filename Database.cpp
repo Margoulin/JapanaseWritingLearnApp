@@ -37,7 +37,7 @@ auto	Database::AddNewKanji(Kanji* kanji) -> void
 	MString onyomiStr = kanji->SerializeOnyomi();
 	//MString insertKanjiRequest("INSERT INTO KANJI VALUES(" + kanjiStr + ",'" + kunyomiStr + "', '" + onyomiStr + "');");
 	MString insertKanjiRequest(
-		"INSERT INTO KANJI (Kanji, Kunyomi, Onyomi, KunTranslation, OnTranslation)\
+		"INSERT INTO Kanji (Kanji, Kunyomi, Onyomi, KunTranslation, OnTranslation)\
 		VALUES(" + kanjiStr + ",'" + kunyomiStr + "', '" + onyomiStr + "', '" + kanji->GetKunyomiTranslation().Str() + "', '" + kanji->GetOnyomiTranslation().Str() + "');");
 	MString insertReviewRequest(
 		"INSERT INTO LearnSession (UpdateDate)\
@@ -64,17 +64,15 @@ auto	Database::LoadKanji() -> void
 {
 	if (!initialized)
 		return;
-	MString getKanjiCountRequest("SELECT COUNT(*) FROM KANJI");
+	MString getKanjiCountRequest("SELECT COUNT(*) FROM Kanji");
 	int result = sqlite3_exec(database, getKanjiCountRequest.Str(), GetKanjiCountCallback, 
 		(void*)&kanjiCount, nullptr);
 	kanjis = new Kanji*[kanjiCount];
-	MString getKanjisRq("SELECT * FROM KANJI;");
+	MString getKanjisRq("SELECT * FROM Kanji;");
 	KanjisFillData data;
 	data.kanjis = kanjis;
 	result = sqlite3_exec(database, getKanjisRq.Str(), GetKanjisCallback, 
 		(void*)&data, nullptr);
-
-	Review_KanjiAddCorrect(kanjis[0]);
 }
 
 static int GetKanjiCountCallback(void* data, int argc, char** argv, char** azColName)
@@ -84,10 +82,8 @@ static int GetKanjiCountCallback(void* data, int argc, char** argv, char** azCol
 	return 0;
 }
 
-static int GetKanjisCallback(void* data, int argc, char** argv, char** azColName)
+static void fillKanji(Kanji** kanjiToFill, int argc, char** argv, char** azColName)
 {
-	KanjisFillData* kanjiData = (KanjisFillData*)data;
-
 	wchar_t kanji = L' ';
 	MString kun(true);
 	MString on(true);
@@ -96,7 +92,7 @@ static int GetKanjisCallback(void* data, int argc, char** argv, char** azColName
 
 	for (unsigned int i = 0; i < argc; i++)
 	{
-			printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+		//printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
 		if (strcmp(azColName[i], "Kanji") == 0)
 		{
 			kanji = std::stoi(argv[0]);
@@ -122,57 +118,158 @@ static int GetKanjisCallback(void* data, int argc, char** argv, char** azColName
 				onTr = argv[i];
 		}
 	}
-	kanjiData->kanjis[kanjiData->count] = new Kanji(kanji);
+	(*kanjiToFill) = new Kanji(kanji);
 	if (kun.Count() > 0)
-		kanjiData->kanjis[kanjiData->count]->DeserializeKunyomiFromJson(kun);
+		(*kanjiToFill)->DeserializeKunyomiFromJson(kun);
 	if (on.Count() > 0)
-		kanjiData->kanjis[kanjiData->count]->DeserializeOnyomiFromJson(on);
+		(*kanjiToFill)->DeserializeOnyomiFromJson(on);
 	if (kunTr.Count() > 0)
-		kanjiData->kanjis[kanjiData->count]->SetKunyomiTranslation(kunTr);
+		(*kanjiToFill)->SetKunyomiTranslation(kunTr);
 	if (onTr.Count() > 0)
-		kanjiData->kanjis[kanjiData->count]->SetOnyomiTranslation(onTr);
+		(*kanjiToFill)->SetOnyomiTranslation(onTr);
+}
+
+static int GetKanjisCallback(void* data, int argc, char** argv, char** azColName)
+{
+	KanjisFillData* kanjiData = (KanjisFillData*)data;
+
+	fillKanji(&(kanjiData->kanjis[kanjiData->count]), argc, argv, azColName);
 	kanjiData->count++;
 	return 0;
 }
 
-static int GetLast20KanjisCallback(void* data, int argc, char** argv, char** azColName)
+static int GetKanjisToListCallback(void* data, int argc, char** argv, char** azColName)
 {
+	std::vector<Kanji*>* vec = (std::vector<Kanji*>*)data;
 	for (unsigned int i = 0; i < argc; i++)
 	{
 		printf("LAST 20 : %s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
 	}
+	Kanji* temp = nullptr;
+	fillKanji(&temp, argc, argv, azColName);
+	vec->push_back(temp);
 	return 0;
 }
 
-auto	Database::Review_GetLast20Kanjis() -> void
+static int GetKanjisReviewStatsCallback(void* data, int argc, char** argv, char** azColName)
 {
-	if (!initialized)
-		return;
-	MString rq("\
-		SELECT ID \
-		FROM LEARNSESSION\
-		WHERE (Success + Fail) < 15\
-		ORDER BY UpdateDesc DESC\
-		");
-	int result = sqlite3_exec(database, rq.Str(), GetLast20KanjisCallback, nullptr, nullptr);
+	KanjiReviewStats* outStats = (KanjiReviewStats*)data;
+
+	for (unsigned int i = 0; i < argc; i++)
+	{
+		if (strcmp(azColName[i], "Success") == 0)
+			outStats->Correct = std::stoi(argv[i]);
+		else if (strcmp(azColName[i], "Fail") == 0)
+			outStats->Wrong = std::stoi(argv[i]);
+	}
+	outStats->Attempts = outStats->Correct + outStats->Wrong;
+
+	return 0;
 }
 
-auto	Database::Review_GetFailedKanjis() -> void
+auto	Database::Review_GetLast20Kanjis() -> std::vector<Kanji*>
 {
+	std::vector<Kanji*> ret;
 	if (!initialized)
-		return;
+		return ret;
 	MString rq("\
-		SELECT ID \
-		FROM LEARNSESSION\
-		WHERE (Fail) / (Success + Fail) > 0.2\
-		ORDER BY UpdateDesc DESC\
-		");
-	int result = sqlite3_exec(database, rq.Str(), GetLast20KanjisCallback, nullptr, nullptr);
+		SELECT * \
+		FROM Kanji\
+		INNER JOIN LearnSession ON LearnSession.Id = Kanji.Id\
+		ORDER BY LearnSession.UpdateDate DESC\
+		LIMIT 20");
+	char* msgError = nullptr;
+	int result = sqlite3_exec(database, rq.Str(), GetKanjisToListCallback, &ret, &msgError);
+	if (result != SQLITE_OK)
+	{
+		std::cout << "Err : " << msgError << std::endl;
+		sqlite3_free(msgError);
+	}
+	return ret;
 }
 
-auto	Database::Review_GetOldKanjis() -> void
+auto	Database::Review_GetFailedKanjis() -> std::vector<Kanji*>
 {
+	std::vector<Kanji*> ret;
+	if (!initialized)
+		return ret;
+	MString rq("\
+		SELECT * \
+		FROM Kanji\
+		INNER JOIN LearnSession ON LearnSession.Id = Kanji.Id\
+		WHERE LearnSession.Success + LearnSession.Fail > 20 AND (LearnSession.Fail / (LearnSession.Success + LearnSession.Fail)) > 0.5\
+		ORDER BY LearnSession.UpdateDate ASC");
+	char* msgError = nullptr;
+	int result = sqlite3_exec(database, rq.Str(), GetKanjisToListCallback, &ret, &msgError);
+	if (result != SQLITE_OK)
+	{
+		std::cout << "Err : " << msgError << std::endl;
+		sqlite3_free(msgError);
+	}
+	return ret;
+}
 
+auto	Database::Review_GetOldKanjis() -> std::vector<Kanji*>
+{
+	std::vector<Kanji*> ret;
+	if (!initialized)
+		return ret;
+	MString rq("\
+		SELECT * \
+		FROM Kanji\
+		INNER JOIN LearnSession ON LearnSession.Id = Kanji.Id\
+		WHERE (LearnSession.Success + LearnSession.Fail) > 20 AND \
+			(LearnSession.UpdateDate BETWEEN Date('now', '-2 year') AND Date('now', '-14 day')) AND \
+			LearnSession.Fail / (LearnSession.Success + LearnSession.Fail) > 0.25");
+	char* msgError = nullptr;
+	int result = sqlite3_exec(database, rq.Str(), GetKanjisToListCallback, &ret, &msgError);
+	if (result != SQLITE_OK)
+	{
+		std::cout << "Err : " << msgError << std::endl;
+		sqlite3_free(msgError);
+	}
+	MString rq2("\
+		SELECT * \
+		FROM Kanji\
+		INNER JOIN LearnSession ON LearnSession.Id = Kanji.Id\
+		WHERE (LearnSession.Success + LearnSession.Fail) > 20 AND \
+			(LearnSession.UpdateDate BETWEEN Date('now', '-2 year') AND Date('now', '-1 month')) AND \
+			LearnSession.Fail / (LearnSession.Success + LearnSession.Fail) > 0.2");
+	msgError = nullptr;
+	result = sqlite3_exec(database, rq2.Str(), GetKanjisToListCallback, &ret, &msgError);
+	if (result != SQLITE_OK)
+	{
+		std::cout << "Err : " << msgError << std::endl;
+		sqlite3_free(msgError);
+	}
+	MString rq3("\
+		SELECT * \
+		FROM Kanji\
+		INNER JOIN LearnSession ON LearnSession.Id = Kanji.Id\
+		WHERE (LearnSession.Success + LearnSession.Fail) > 20 AND \
+			(LearnSession.UpdateDate BETWEEN Date('now', '-2 year') AND Date('now', '-2 month')) AND \
+			LearnSession.Fail / (LearnSession.Success + LearnSession.Fail) > 0.1");
+	msgError = nullptr;
+	result = sqlite3_exec(database, rq3.Str(), GetKanjisToListCallback, &ret, &msgError);
+	if (result != SQLITE_OK)
+	{
+		std::cout << "Err : " << msgError << std::endl;
+		sqlite3_free(msgError);
+	}
+	MString rq4("\
+		SELECT * \
+		FROM Kanji\
+		INNER JOIN LearnSession ON LearnSession.Id = Kanji.Id\
+		WHERE (LearnSession.Success + LearnSession.Fail) > 20 AND \
+			(LearnSession.UpdateDate BETWEEN Date('now', '-2 year') AND Date('now', '-4 month'))");
+	msgError = nullptr;
+	result = sqlite3_exec(database, rq4.Str(), GetKanjisToListCallback, &ret, &msgError);
+	if (result != SQLITE_OK)
+	{
+		std::cout << "Err : " << msgError << std::endl;
+		sqlite3_free(msgError);
+	}
+	return ret;
 }
 
 auto	Database::Review_KanjiAddCorrect(Kanji* kanji) -> void
@@ -209,6 +306,26 @@ auto	Database::Review_KanjiAddWrong(Kanji* kanji) -> void
 		std::cout << "Err : " << msgError << std::endl;
 		sqlite3_free(msgError);
 	}
+}
+
+auto	Database::Review_KanjiGetReviewStats(Kanji* kanji) -> KanjiReviewStats
+{
+	KanjiReviewStats ret;
+	MString rq("SELECT Success, Fail\
+				FROM LearnSession\
+				WHERE (SELECT id\
+				FROM Kanji\
+				WHERE Kanji.Kanji = ");
+	rq += MString::FromUInt((unsigned int)kanji->GetKanji()).Str();
+	rq += ") = LearnSession.ID";
+	char* msgError = nullptr;
+	int result = sqlite3_exec(database, rq.Str(), GetKanjisReviewStatsCallback, &ret, &msgError);
+	if (result != SQLITE_OK)
+	{
+		std::cout << "Err : " << msgError << std::endl;
+		sqlite3_free(msgError);
+	}
+	return ret;
 }
 
 auto	Database::expandKanjiArray() -> void

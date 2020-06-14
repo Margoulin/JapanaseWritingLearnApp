@@ -17,6 +17,8 @@ public:
 	virtual auto	Update() -> void = 0;
 	virtual auto	Render(D3D11Renderer*) -> void = 0;
 
+	virtual auto	ImGuiUpdate() -> void = 0;
+
 	auto	operator = (const Scene&)->Scene & = delete;
 	auto	operator = (Scene&&)->Scene & = delete;
 

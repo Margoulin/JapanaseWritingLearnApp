@@ -1,9 +1,28 @@
 #pragma once
 
 #include <cstdint>
+#include <vector>
 
 class sqlite3;
 class Kanji;
+
+struct KanjiReviewStats
+{
+	unsigned int Attempts = 0;
+	unsigned int Correct = 0;
+	unsigned int Wrong = 0;
+
+	float	GetCorrectPercentage()
+	{ 
+		if (Attempts != 0)
+		{
+			float q = (float)Correct / (float)Attempts;
+			return q * 100.0f;
+		}
+		return 0.0f;
+		//return Attempts == 0 ? 0.0f : (Correct / Attempts) * 100.0f; 
+	}
+};
 
 class Database
 {
@@ -25,11 +44,12 @@ public:
 	auto	GetKanji(uint8_t pos) const -> Kanji* { return kanjis[pos]; }
 	auto	GetKanjiCount() const -> uint8_t { return kanjiCount; }
 
-	auto	Review_GetLast20Kanjis() -> void;
-	auto	Review_GetFailedKanjis() -> void;
-	auto	Review_GetOldKanjis() -> void;
+	auto	Review_GetLast20Kanjis() -> std::vector<Kanji*>;
+	auto	Review_GetFailedKanjis() -> std::vector<Kanji*>;
+	auto	Review_GetOldKanjis() -> std::vector<Kanji*>;
 	auto	Review_KanjiAddCorrect(Kanji* kanji) -> void;
 	auto	Review_KanjiAddWrong(Kanji* kanji) -> void;
+	auto	Review_KanjiGetReviewStats(Kanji* kanji) -> KanjiReviewStats;
 
 	auto	operator = (const Database&)->Database & = delete;
 	auto	operator = (Database&&)->Database & = delete;

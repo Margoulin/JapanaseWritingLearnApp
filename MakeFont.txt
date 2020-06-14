@@ -1,0 +1,1 @@
+MakeSpriteFont "UD Digi Kyokasho NP-B" final.spritefont /FontSize:32 /FastPack /CharacterRegion:0x0020-0x9faf

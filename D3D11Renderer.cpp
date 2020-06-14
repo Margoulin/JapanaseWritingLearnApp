@@ -1,4 +1,4 @@
-#include "D3D11Renderer.h"
+﻿#include "D3D11Renderer.h"
 
 #include "Window.h"
 
@@ -13,7 +13,7 @@ auto	D3D11Renderer::Initialize(Window* win) -> void
 	createRenderTarget();
 
 	spriteBatch = new DirectX::SpriteBatch(deviceContext);
-	font = new DirectX::SpriteFont(device, L"default.spritefont");
+	font = new DirectX::SpriteFont(device, L"final.spritefont");
 
 }
 
@@ -37,14 +37,14 @@ auto	D3D11Renderer::EndRender() -> void
 	spriteBatch->End();
 }
 
-auto	D3D11Renderer::DrawString(const char* text, Vector2F const& position, Vector4F const& color) -> void
+auto	D3D11Renderer::DrawString(const char* text, Vector2F const& position, Vector4F const& color, float scale) -> void
 {
-	font->DrawString(spriteBatch, text, { position.x, position.y, 1.0f, 1.0f }, {color.x, color.y, color.z, color.w});
+	font->DrawString(spriteBatch, text, { position.x, position.y, 1.0f, 1.0f }, {color.x, color.y, color.z, color.w}, 0.0f, DirectX::g_XMZero, scale);
 }
 
-auto	D3D11Renderer::DrawString(MString const& text, Vector2F const& position, Vector4F const& color) -> void
+auto	D3D11Renderer::DrawString(MString const& text, Vector2F const& position, Vector4F const& color, float scale) -> void
 {
-	DrawString(text.Str(), position, color);
+	DrawString(text.Str(), position, color, scale);
 }
 
 auto	D3D11Renderer::createRenderTarget() -> void

@@ -32,8 +32,8 @@ public:
 	auto	BeginRender() -> void;
 	auto	EndRender() -> void;
 
-	auto	DrawString(const char* text, Vector2F const& position, Vector4F const& color) -> void;
-	auto	DrawString(MString const& text, Vector2F const& position, Vector4F const& color) -> void;
+	auto	DrawString(const char* text, Vector2F const& position, Vector4F const& color, float scale = 1.0f) -> void;
+	auto	DrawString(MString const& text, Vector2F const& position, Vector4F const& color, float scale = 1.0f) -> void;
 
 	auto	GetDevice() const -> ID3D11Device* { return device; }
 	auto	GetDeviceContext() const -> ID3D11DeviceContext* { return deviceContext; }

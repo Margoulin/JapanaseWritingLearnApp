@@ -90,6 +90,9 @@
     <ClCompile Include="RevisionScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FontUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="JapaneseTypes.h">
@@ -261,6 +264,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RevisionScene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FontUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

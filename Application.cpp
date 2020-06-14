@@ -95,6 +95,12 @@ auto	Application::Update() -> void
 		return;
 	}
 
+	if (pendingScene)
+	{
+		SetScene(pendingScene);
+		pendingScene = nullptr;
+	}
+
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
@@ -102,12 +108,17 @@ auto	Application::Update() -> void
 	if (scene)
 		scene->Update();
 
+	if (scene)
+		scene->ImGuiUpdate();
+
 	renderer->BeginRender();
 
 	if (scene)
 		scene->Render(renderer);
 
 	ImGui::Begin("Database");
+	ImGui::SetWindowSize({340.0f, 720.0f});
+	ImGui::SetWindowPos({940.0f, 0.0f});
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	database->ImGuiUpdate();
 
@@ -117,6 +128,13 @@ auto	Application::Update() -> void
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	renderer->Swap();
+}
+
+auto	Application::LoadScene(Scene* newScene) -> void
+{
+	if (pendingScene)
+		return;
+	pendingScene = newScene;
 }
 
 auto	Application::SetScene(Scene* inScene) -> void

@@ -138,6 +138,7 @@
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="D3D11Renderer.cpp" />
     <ClCompile Include="Database.cpp" />
+    <ClCompile Include="FontUtils.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_demo.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
@@ -158,6 +159,7 @@
     <ClInclude Include="Application.h" />
     <ClInclude Include="D3D11Renderer.h" />
     <ClInclude Include="Database.h" />
+    <ClInclude Include="FontUtils.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_internal.h" />
