@@ -37,6 +37,7 @@ public:
 	auto	operator = (Kanji&&)->Kanji & = delete;
 
 	auto	ImGuiUpdate() -> void;
+	auto	ImGuiUpdateOpen() -> void;
 
 protected:
 

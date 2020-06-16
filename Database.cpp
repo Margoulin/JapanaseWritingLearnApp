@@ -141,10 +141,6 @@ static int GetKanjisCallback(void* data, int argc, char** argv, char** azColName
 static int GetKanjisToListCallback(void* data, int argc, char** argv, char** azColName)
 {
 	std::vector<Kanji*>* vec = (std::vector<Kanji*>*)data;
-	for (unsigned int i = 0; i < argc; i++)
-	{
-		printf("LAST 20 : %s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-	}
 	Kanji* temp = nullptr;
 	fillKanji(&temp, argc, argv, azColName);
 	vec->push_back(temp);
@@ -343,11 +339,9 @@ char kanjiBuffer[32]{"\0"};
 char translationKunBuffer[256]{"\0"};
 char translationOnBuffer[256]{"\0"};
 Kanji* tempKanji = nullptr;
-char yomiBuffer[128]{"\0"};
-int yomiIdx = 0;
+char yomiBuffer[128][10]{ {"\0"}, {"\0"}, {"\0"}, {"\0"}, {"\0"}, {"\0"}, {"\0"}, {"\0"}, {"\0"}, {"\0"} };
 int tempKunyomiCount = 0;
 int tempOnyomiCount = 0;
-bool isEditingKunyomi = true;
 
 auto	Database::ImGuiUpdate() -> void
 {
@@ -382,23 +376,22 @@ auto	Database::ImGuiUpdate() -> void
 		else
 		{
 			tempKanji->ImGuiUpdate();
-			if (ImGui::RadioButton("Editing Kunyomi", isEditingKunyomi))
-				isEditingKunyomi = !isEditingKunyomi;
-			ImGui::InputInt(isEditingKunyomi?"Kunyomi Idx":"Onyomi Idx", &yomiIdx);
-			ImGui::InputText(isEditingKunyomi?"Kunyomi" : "Onyomi", yomiBuffer, 128);
-			if (ImGui::Button(isEditingKunyomi ? "Set Kunyomi" : "Set Onyomi"))
+			for (int pos = 0; pos < tempKanji->GetKunyomiCount(); pos++)
+				ImGui::InputText(MString("Kunyomi " + MString::FromInt(pos)).Str(), yomiBuffer[pos], 128);
+			for (int pos = 0; pos < tempKanji->GetOnyomiCount(); pos++)
+				ImGui::InputText(MString("Onyomi " + MString::FromInt(pos)).Str(), yomiBuffer[pos + tempKanji->GetKunyomiCount()], 128);
+			if (ImGui::Button("Set Yomi"))
 			{
-				if (isEditingKunyomi)
-					tempKanji->SetKunyomi(yomiIdx, MWString::FromUTF8(yomiBuffer));
-				else	
-					tempKanji->SetOnyomi(yomiIdx, MWString::FromUTF8(yomiBuffer));
+				for (int pos = 0; pos < tempKanji->GetKunyomiCount(); pos++)
+					tempKanji->SetKunyomi(pos, MWString::FromUTF8(yomiBuffer[pos]));
+				for (int pos = 0; pos < tempKanji->GetOnyomiCount(); pos++)
+					tempKanji->SetOnyomi(pos, MWString::FromUTF8(yomiBuffer[pos + tempKanji->GetKunyomiCount()]));
 			}
 			if (ImGui::Button("Add To Database"))
 			{
 				AddNewKanji(tempKanji);
 
 				tempKanji = nullptr;
-				yomiIdx = 0;
 			}
 		}
 		ImGui::Unindent();

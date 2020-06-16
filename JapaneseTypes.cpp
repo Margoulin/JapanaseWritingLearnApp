@@ -142,3 +142,39 @@ auto	Kanji::ImGuiUpdate() -> void
 			ImGui::Text(MString("Onyomi Translation : " + onTranslation).Str());
 	}
 }
+
+auto	Kanji::ImGuiUpdateOpen() -> void
+{
+	if (ImGui::CollapsingHeader(MWString(kanji).ToUTF8String().Str(), ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		if (kunyomiCount > 0)
+		{
+			ImGui::Indent();
+			if (ImGui::CollapsingHeader(MString("Kunyomi : " + MString::FromUInt(kunyomiCount)).Str(), ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				ImGui::Indent();
+				for (unsigned int idx = 0; idx < kunyomiCount; idx++)
+					ImGui::Text(kunyomi[idx].ToUTF8String().Str());
+				ImGui::Unindent();
+			}
+			ImGui::Unindent();
+		}
+
+		if (onyomiCount > 0)
+		{
+			ImGui::Indent();
+			if (ImGui::CollapsingHeader(MString("Onyomi : " + MString::FromUInt(onyomiCount)).Str(), ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				ImGui::Indent();
+				for (unsigned int idx = 0; idx < onyomiCount; idx++)
+					ImGui::Text(onyomi[idx].ToUTF8String().Str());
+				ImGui::Unindent();
+			}
+			ImGui::Unindent();
+		}
+		if (kunTranslation.Count() > 0)
+			ImGui::Text(MString("Kunyomi Translation : " + kunTranslation).Str());
+		if (onTranslation.Count() > 0)
+			ImGui::Text(MString("Onyomi Translation : " + onTranslation).Str());
+	}
+}

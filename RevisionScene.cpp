@@ -36,9 +36,9 @@ auto	RevisionScene::Render(D3D11Renderer* rend) -> void
 	if (showSolution)
 	{
 		MWString wideKanji = MWString(kanjiList[currentKanjiIndex]->GetKanjiStr());
-		rend->DrawString(wideKanji.ToUTF8String(), Vector2F(500.0f, 300.0f), Vector4F::one, 3.0f);
+		rend->DrawString(wideKanji.ToUTF8String(), Vector2F(250.0f, 90.0f), Vector4F::one, 3.0f);
 	}
-	rend->DrawString("Revision Scene", Vector2F(550.0f, 100.0f), ColorWhite, 0.5f);
+	rend->DrawString("Revision Scene", Vector2F(250.0f, 50.0f), ColorWhite, 0.5f);
 }
 
 #include <imgui.h>
@@ -46,8 +46,8 @@ auto	RevisionScene::Render(D3D11Renderer* rend) -> void
 auto	RevisionScene::ImGuiUpdate() -> void
 {
 	ImGui::Begin("Revision Session");
-	ImGui::SetWindowSize({ 600.0f, 200.0f });
-	ImGui::SetWindowPos({ 340.0f, 520.0f });
+	ImGui::SetWindowSize({ 700.0f, 440.0f });
+	ImGui::SetWindowPos({ 0.0f, 280.0f });
 
 	if (revisionStarted)
 	{
@@ -59,6 +59,8 @@ auto	RevisionScene::ImGuiUpdate() -> void
 				kanjiImGui();
 			if (showSolution)
 			{
+				kanjiList[currentKanjiIndex]->ImGuiUpdateOpen();
+				ImGui::Spacing();
 				if (ImGui::Button("Validate", { 200.0f, 50.0f }))
 					validatekanji();
 				if (ImGui::Button("Negate", { 200.0f, 50.0f }))
@@ -107,7 +109,6 @@ auto	RevisionScene::validatekanji() -> void
 {
 	Database* db = Application::Instance->GetDatabase();
 	db->Review_KanjiAddCorrect(kanjiList[currentKanjiIndex]);
-	std::cout << "oergnoengoenon" << std::endl;
 	currentKanjiRevised = true;
 }
 
