@@ -173,7 +173,7 @@ auto	Database::Review_GetLast20Kanjis() -> std::vector<Kanji*>
 		FROM Kanji\
 		INNER JOIN LearnSession ON LearnSession.Id = Kanji.Id\
 		ORDER BY LearnSession.UpdateDate DESC\
-		LIMIT 20");
+		LIMIT 100");
 	char* msgError = nullptr;
 	int result = sqlite3_exec(database, rq.Str(), GetKanjisToListCallback, &ret, &msgError);
 	if (result != SQLITE_OK)
@@ -339,7 +339,7 @@ char kanjiBuffer[32]{"\0"};
 char translationKunBuffer[256]{"\0"};
 char translationOnBuffer[256]{"\0"};
 Kanji* tempKanji = nullptr;
-char yomiBuffer[128][10]{ {"\0"}, {"\0"}, {"\0"}, {"\0"}, {"\0"}, {"\0"}, {"\0"}, {"\0"}, {"\0"}, {"\0"} };
+char yomiBuffer[10][1024]{ {"\0"}, {"\0"}, {"\0"}, {"\0"}, {"\0"}, {"\0"}, {"\0"}, {"\0"}, {"\0"}, {"\0"} };
 int tempKunyomiCount = 0;
 int tempOnyomiCount = 0;
 
@@ -377,9 +377,9 @@ auto	Database::ImGuiUpdate() -> void
 		{
 			tempKanji->ImGuiUpdate();
 			for (int pos = 0; pos < tempKanji->GetKunyomiCount(); pos++)
-				ImGui::InputText(MString("Kunyomi " + MString::FromInt(pos)).Str(), yomiBuffer[pos], 128);
+				ImGui::InputText(MString("Kunyomi " + MString::FromInt(pos)).Str(), yomiBuffer[pos], 1024);
 			for (int pos = 0; pos < tempKanji->GetOnyomiCount(); pos++)
-				ImGui::InputText(MString("Onyomi " + MString::FromInt(pos)).Str(), yomiBuffer[pos + tempKanji->GetKunyomiCount()], 128);
+				ImGui::InputText(MString("Onyomi " + MString::FromInt(pos)).Str(), yomiBuffer[pos + tempKanji->GetKunyomiCount()], 1024);
 			if (ImGui::Button("Set Yomi"))
 			{
 				for (int pos = 0; pos < tempKanji->GetKunyomiCount(); pos++)

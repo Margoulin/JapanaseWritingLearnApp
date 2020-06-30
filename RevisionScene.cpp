@@ -36,9 +36,9 @@ auto	RevisionScene::Render(D3D11Renderer* rend) -> void
 	if (showSolution)
 	{
 		MWString wideKanji = MWString(kanjiList[currentKanjiIndex]->GetKanjiStr());
-		rend->DrawString(wideKanji.ToUTF8String(), Vector2F(250.0f, 90.0f), Vector4F::one, 3.0f);
+		rend->DrawString(wideKanji.ToUTF8String(), Vector2F(250.0f, 70.0f), Vector4F::one, 3.0f);
 	}
-	rend->DrawString("Revision Scene", Vector2F(250.0f, 50.0f), ColorWhite, 0.5f);
+	rend->DrawString("Revision Scene", Vector2F(250.0f, 40.0f), ColorWhite, 0.5f);
 }
 
 #include <imgui.h>
@@ -46,8 +46,8 @@ auto	RevisionScene::Render(D3D11Renderer* rend) -> void
 auto	RevisionScene::ImGuiUpdate() -> void
 {
 	ImGui::Begin("Revision Session");
-	ImGui::SetWindowSize({ 700.0f, 440.0f });
-	ImGui::SetWindowPos({ 0.0f, 280.0f });
+	ImGui::SetWindowSize({ 700.0f, 460.0f });
+	ImGui::SetWindowPos({ 0.0f, 260.0f });
 
 	if (revisionStarted)
 	{
@@ -58,9 +58,31 @@ auto	RevisionScene::ImGuiUpdate() -> void
 			if (kanjiList.size() > 0 && currentKanjiIndex < kanjiList.size() && kanjiList[currentKanjiIndex])
 				kanjiImGui();
 			if (showSolution)
-			{
 				kanjiList[currentKanjiIndex]->ImGuiUpdateOpen();
-				ImGui::Spacing();
+		}
+		else
+		{
+			if (currentKanjiIndex == kanjiList.size() - 1)
+			{ 
+				showSolution = false;
+				resultImGui();
+			}
+		}
+	}
+
+	ImGui::End();
+
+	ImGui::Begin("Revision Command");
+
+	ImGui::SetWindowSize({200.0f, 260.0f});
+	ImGui::SetWindowPos({0.0f, 0.0f});
+
+	if (revisionStarted)
+	{
+		if (!currentKanjiRevised)
+		{
+			if (showSolution)
+			{
 				if (ImGui::Button("Validate", { 200.0f, 50.0f }))
 					validatekanji();
 				if (ImGui::Button("Negate", { 200.0f, 50.0f }))
@@ -75,21 +97,11 @@ auto	RevisionScene::ImGuiUpdate() -> void
 		else
 		{
 			if (currentKanjiIndex == kanjiList.size() - 1)
-			{ 
+			{
 				showSolution = false;
-				resultImGui();
 				if (ImGui::Button("End Session", { 200.0f, 50.0f }))
 				{
 					returnMainMenu();
-				}
-			}
-			else
-			{
-				if (ImGui::Button("Next", { 200.0f, 50.0f }))
-				{
-					showSolution = false;
-					currentKanjiRevised = false;
-					currentKanjiIndex++;
 				}
 			}
 		}
@@ -100,23 +112,33 @@ auto	RevisionScene::ImGuiUpdate() -> void
 			startRevision();
 	}
 
-
 	ImGui::End();
 }
 
-#include <iostream>
 auto	RevisionScene::validatekanji() -> void
 {
 	Database* db = Application::Instance->GetDatabase();
 	db->Review_KanjiAddCorrect(kanjiList[currentKanjiIndex]);
-	currentKanjiRevised = true;
+	if (currentKanjiIndex == kanjiList.size() - 1)
+		currentKanjiRevised = true;
+	else
+	{
+		showSolution = false;
+		currentKanjiIndex++;
+	}
 }
 
 auto	RevisionScene::markKanjiAsWrong() -> void
 {
 	Database* db = Application::Instance->GetDatabase();
 	db->Review_KanjiAddWrong(kanjiList[currentKanjiIndex]);
-	currentKanjiRevised = true;
+	if (currentKanjiIndex == kanjiList.size() - 1)
+		currentKanjiRevised = true;
+	else
+	{
+		showSolution = false;
+		currentKanjiIndex++;
+	}
 }
 
 auto	RevisionScene::returnMainMenu() -> void
@@ -147,9 +169,28 @@ auto	RevisionScene::kanjiImGui() -> void
 		}
 	} while (couldSplit);
 	kunList.push_back(kunTr);
-	for (auto& tr : kunList)
+	if (kunList.size() > 0 && ImGui::CollapsingHeader("Kunyomi", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		ImGui::Text(tr.Str());
+		for (auto& tr : kunList)
+			ImGui::Text(tr.Str());
+	}
+	std::vector<MString>	onList;
+	couldSplit = false;
+	do
+	{
+		MString left, right;
+		couldSplit = onTr.Split(",", left, right);
+		if (couldSplit)
+		{
+			onList.push_back(left);
+			onTr = right;
+		}
+	} while (couldSplit);
+	onList.push_back(onTr);
+	if (onList.size() > 0 && ImGui::CollapsingHeader("Onyomi", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		for (auto& tr : onList)
+			ImGui::Text(tr.Str());
 	}
 }
 
